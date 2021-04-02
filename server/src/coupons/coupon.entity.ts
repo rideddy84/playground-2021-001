@@ -1,8 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 export enum CouponType {
-  AMOUNT = "amount",
-  PERCENT = "percent"
+  AMOUNT = 'amount',
+  PERCENT = 'percent',
 }
 @Entity()
 export class Coupon {
@@ -13,9 +13,23 @@ export class Coupon {
   name: string;
 
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: CouponType,
-    default: CouponType.AMOUNT
+    default: CouponType.AMOUNT,
   })
   type: CouponType;
+
+  @Column()
+  discount: number;
+
+  @Column({
+    unique: true,
+  })
+  code: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

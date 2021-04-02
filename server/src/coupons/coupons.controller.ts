@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { Coupon } from './coupon.entity';
 import { CouponsService } from './coupons.service';
 
@@ -9,5 +9,10 @@ export class CouponsController {
   @Get()
   findAll(): Promise<Coupon[]> {
     return this.couponsService.findAll();
+  }
+
+  @Post()
+  create(@Body() coupon: Coupon): Promise<Coupon> {
+    return this.couponsService.create(coupon);
   }
 }

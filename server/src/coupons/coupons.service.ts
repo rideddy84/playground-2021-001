@@ -18,6 +18,10 @@ export class CouponsService {
     return this.CouponsRepository.findOne(id);
   }
 
+  create(coupon: Coupon): Promise<Coupon> {
+    return this.CouponsRepository.save(coupon);
+  }
+
   async remove(id: string): Promise<void> {
     await this.CouponsRepository.delete(id);
   }
