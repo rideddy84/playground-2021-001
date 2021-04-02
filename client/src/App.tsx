@@ -12,6 +12,7 @@ interface Coupon {
 function App() {
   const [name, setName] = useState('')
   const [type, setType] = useState('percent')
+  const [totalCount, setTotalCount] = useState(0)
   const [count, setCount] = useState(0)
   const [discount, setDiscount] = useState(0)
   const [coupons, setCoupons] = useState<Coupon[]>([])
@@ -22,8 +23,9 @@ function App() {
   }, [])
 
   const getData = async () => {
-    const { data } = await axios.get('/coupons');
-
+    const { data: totalCount } = await axios.get('/coupons/count');
+    const { data } = await axios.get('/coupons?take=20');
+    setTotalCount(totalCount)
     setCoupons(data)
   }
 
@@ -54,49 +56,66 @@ function App() {
   }
 
   return (
-    <div className="container">
-      <div>
-        <h4>Generate new coupons</h4>
-        <div>
-          <label>Coupon Name</label>
-          <input type="text" value={name} onChange={(e) => {
-            setName(e.target.value || '')
-          }} />
-        </div>
-        <div>
-          <label>Disount(price or percent)</label>
-          <input type="number" min="1" value={discount} onChange={(e) => {
-            setDiscount(e.target.valueAsNumber || 0)
-          }} />
-        </div>
-        <div>
-          <label>Count</label>
-          <input type="number" min="1" max="100000" value={count} onChange={(e) => {
-            setCount(e.target.valueAsNumber || 0)
-          }} />
-        </div>
-        <div>
-          <button className="btn btn-primary" onClick={generateCoupons}>Generate</button>
+    <>
+      <div className="container">
+        <div className="row">
+          <div className="col-auto">
+            <div>
+              <h4>Generate new coupons</h4>
+              <div className="mb-3">
+                <label className="form-label">Coupon Name</label>
+                <input className="form-control" type="text" value={name} onChange={(e) => {
+                  setName(e.target.value || '')
+                }} />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Disount(price or percent)</label>
+                <input className="form-control" type="number" min="1" value={discount} onChange={(e) => {
+                  setDiscount(e.target.valueAsNumber || 0)
+                }} />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Count</label>
+                <input className="form-control" type="number" min="1" max="100000" value={count} onChange={(e) => {
+                  setCount(e.target.valueAsNumber || 0)
+                }} />
+              </div>
+              <div className="mb-3">
+                <button className="btn btn-primary" onClick={generateCoupons}>Generate</button>
+                <p className="text-muted">
+                  {alertText}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <p>
-        {alertText}
-      </p>
-      <table className="table">
-        <tbody>
-          {
-            coupons && coupons.map(coupon => {
-              return <tr key={coupon.code}>
-                <td>{coupon.name}</td>
-                <td>{coupon.discount}</td>
-                <td>{coupon.code}</td>
-                <td>{coupon.createdAt}</td>
-              </tr>
-            })
-          }
-        </tbody>
-      </table>
-    </div>
+
+      <div className="container">
+        <div className="row">
+          <div className="col-auto me-auto"><strong>Total: {totalCount}</strong></div>
+          <div className="col-auto"><button className="btn btn-light" onClick={getData}>Refresh</button></div>
+        </div>
+        <div className="row">
+          <div className="col-auto">
+            <table className="table">
+              <tbody>
+                {
+                  coupons && coupons.map(coupon => {
+                    return <tr key={coupon.code}>
+                      <td>{coupon.name}</td>
+                      <td>{coupon.discount}</td>
+                      <td>{coupon.code}</td>
+                      <td>{coupon.createdAt}</td>
+                    </tr>
+                  })
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

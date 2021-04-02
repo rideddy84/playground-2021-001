@@ -10,8 +10,12 @@ export class CouponsService {
     private CouponsRepository: Repository<Coupon>,
   ) {}
 
-  findAll(): Promise<Coupon[]> {
-    return this.CouponsRepository.find();
+  findAll(query): Promise<Coupon[]> {
+    const { take = 10, order = { id: 'DESC' } } = query;
+    return this.CouponsRepository.find({
+      take,
+      order,
+    });
   }
 
   findOne(id: string): Promise<Coupon> {
@@ -20,6 +24,10 @@ export class CouponsService {
 
   create(coupon: Coupon): Promise<Coupon> {
     return this.CouponsRepository.save(coupon);
+  }
+
+  count(query): Promise<number> {
+    return this.CouponsRepository.count(query);
   }
 
   async remove(id: string): Promise<void> {

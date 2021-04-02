@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { Coupon } from './coupon.entity';
 import { CouponsService } from './coupons.service';
 
@@ -7,8 +7,13 @@ export class CouponsController {
   constructor(private readonly couponsService: CouponsService) {}
 
   @Get()
-  findAll(): Promise<Coupon[]> {
-    return this.couponsService.findAll();
+  findAll(@Query() query): Promise<Coupon[]> {
+    return this.couponsService.findAll(query);
+  }
+
+  @Get('count')
+  count(@Query() query): Promise<number> {
+    return this.couponsService.count(query);
   }
 
   @Post()
