@@ -1,5 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
+export enum CouponType {
+  AMOUNT = "amount",
+  PERCENT = "percent"
+}
 @Entity()
 export class Coupon {
   @PrimaryGeneratedColumn()
@@ -8,6 +12,10 @@ export class Coupon {
   @Column()
   name: string;
 
-  @Column()
-  type: string;
+  @Column({
+    type: "enum",
+    enum: CouponType,
+    default: CouponType.AMOUNT
+  })
+  type: CouponType;
 }
