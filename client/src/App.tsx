@@ -9,7 +9,7 @@ function App() {
   }, [])
 
   const getData = async () => {
-    const { data } = await axios.get('/');
+    const { data } = await axios.get('/coupons');
 
     console.log('data', data);
   }
