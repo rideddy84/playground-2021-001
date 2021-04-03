@@ -39,20 +39,14 @@ function App() {
         setAlertText('할인은 최대 99%까지 허용합니다.')
       }
     }
-
-    const promises = []
-
-    for (let i = 0; i < count; i++) {
-      promises.push(axios.post('/coupons', {
-        name,
-        type,
-        discount,
-        code: makeid(10)
-      }));
-    }
-    await Promise.all(promises)
+    await axios.post('/coupons/generate', {
+      name,
+      type,
+      discount,
+      count
+    })
+    setAlertText(`쿠폰을 생성을 ${count}개 요청했습니다. 양에 따라 시간이 다소 소요될 수 있습니다.`)
     getData()
-    setAlertText('쿠폰을 생성했습니다.')
   }
 
   return (
@@ -120,13 +114,3 @@ function App() {
 }
 
 export default App;
-
-function makeid(length: number) {
-  var result = '';
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}

@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Coupon } from './coupons/coupon.entity';
 import { CouponsModule } from './coupons/coupons.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -17,7 +18,13 @@ import { CouponsModule } from './coupons/coupons.module';
       entities: [Coupon],
       synchronize: true,
     }),
-    CouponsModule
+    CouponsModule,
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

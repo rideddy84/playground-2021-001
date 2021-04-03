@@ -7,7 +7,7 @@ export enum CouponType {
 @Entity()
 export class Coupon {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
 
   @Column()
   name: string;
@@ -28,8 +28,8 @@ export class Coupon {
   code: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt?: Date;
 }
