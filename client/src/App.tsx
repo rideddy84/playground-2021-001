@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import moment from 'moment';
 import './App.css';
 
 interface Coupon {
@@ -7,6 +8,7 @@ interface Coupon {
   discount: number
   code: string
   createdAt: Date
+  type: string
 }
 
 function App() {
@@ -45,7 +47,7 @@ function App() {
       discount,
       count
     })
-    setAlertText(`쿠폰을 생성을 ${count}개 요청했습니다. 양에 따라 시간이 다소 소요될 수 있습니다.`)
+    setAlertText(`쿠폰을 생성을 ${count}개 요청했습니다. 양에 따라 시간이 다소 소요될 수 있습니다. - ${moment().format('YYYY-MM-DD HH:mm')}`)
     getData()
   }
 
@@ -63,6 +65,21 @@ function App() {
                 }} />
               </div>
               <div className="mb-3">
+                <label className="form-label">Coupon Type</label>
+                <input id="type-percent" className="form-check-input" type="radio" name="type" defaultChecked={true} onClick={(e) => {
+                  setType('percent')
+                }} />
+                <label className="form-check-label" htmlFor="type-percent">
+                  Percent
+                </label>
+                <input id="type-amount" className="form-check-input" type="radio" name="type" onClick={(e) => {
+                  setType('amount')
+                }} />
+                <label className="form-check-label" htmlFor="type-amount">
+                  Amount
+                </label>
+              </div>
+              <div className="mb-3">
                 <label className="form-label">Disount(price or percent)</label>
                 <input className="form-control" type="number" min="1" value={discount} onChange={(e) => {
                   setDiscount(e.target.valueAsNumber || 0)
@@ -71,7 +88,11 @@ function App() {
               <div className="mb-3">
                 <label className="form-label">Count</label>
                 <input className="form-control" type="number" min="1" max="100000" value={count} onChange={(e) => {
-                  setCount(e.target.valueAsNumber || 0)
+                  let newCount = e.target.valueAsNumber || 0
+                  if (newCount > 100000) {
+                    newCount = 100000
+                  }
+                  setCount(newCount)
                 }} />
               </div>
               <div className="mb-3">
@@ -93,14 +114,24 @@ function App() {
         <div className="row">
           <div className="col-auto">
             <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Disount(price or percent)</th>
+                  <th>Code</th>
+                  <th>Created At</th>
+                </tr>
+              </thead>
               <tbody>
                 {
                   coupons && coupons.map(coupon => {
                     return <tr key={coupon.code}>
                       <td>{coupon.name}</td>
+                      <td>{coupon.type}</td>
                       <td>{coupon.discount}</td>
                       <td>{coupon.code}</td>
-                      <td>{coupon.createdAt}</td>
+                      <td>{moment(coupon.createdAt).format()}</td>
                     </tr>
                   })
                 }
