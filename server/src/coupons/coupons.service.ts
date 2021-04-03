@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InsertResult, Repository } from 'typeorm';
 import { Coupon } from './coupon.entity';
+import { getConnection } from 'typeorm';
 
 @Injectable()
 export class CouponsService {
@@ -24,6 +25,15 @@ export class CouponsService {
 
   create(coupon: Coupon): Promise<Coupon> {
     return this.CouponsRepository.save(coupon);
+  }
+
+  bulkCreate(coupons: Coupon[]): Promise<InsertResult> {
+    return getConnection()
+      .createQueryBuilder()
+      .insert()
+      .into(Coupon)
+      .values(coupons)
+      .execute();
   }
 
   count(query): Promise<number> {
