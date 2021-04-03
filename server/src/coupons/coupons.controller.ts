@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { Coupon } from './coupon.entity';
 import { CouponsService } from './coupons.service';
 import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import Bull, { Queue } from 'bull';
 
 @Controller('coupons')
 export class CouponsController {
@@ -14,12 +14,28 @@ export class CouponsController {
 
   @Get()
   findAll(@Query() query): Promise<Coupon[]> {
-    return this.couponsService.findAll(query);
+    const { skip, take, type } = query;
+    return this.couponsService.findAll({
+      skip,
+      take,
+      ...(type && {
+        where: {
+          type,
+        },
+      }),
+    });
   }
 
   @Get('count')
   count(@Query() query): Promise<number> {
-    return this.couponsService.count(query);
+    const { type } = query;
+    return this.couponsService.count({
+      ...(type && {
+        where: {
+          type,
+        },
+      }),
+    });
   }
 
   @Post()
@@ -28,7 +44,7 @@ export class CouponsController {
   }
 
   @Post('generate')
-  async generate(@Body() coupon: Coupon) {
-    await this.couponQueue.add('generate', coupon);
+  generate(@Body() coupon: Coupon): Promise<Bull.Job<any>> {
+    return this.couponQueue.add('generate', coupon);
   }
 }

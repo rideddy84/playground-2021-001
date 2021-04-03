@@ -12,10 +12,12 @@ export class CouponsService {
   ) {}
 
   findAll(query): Promise<Coupon[]> {
-    const { take = 10, order = { id: 'DESC' } } = query;
+    const { skip = 0, take = 10, order = { id: 'DESC' }, where } = query;
     return this.CouponsRepository.find({
+      skip,
       take,
       order,
+      where,
     });
   }
 

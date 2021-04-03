@@ -19,14 +19,30 @@ function App() {
   const [discount, setDiscount] = useState(0)
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [alertText, setAlertText] = useState('')
+  const [searchOption, setSearchOption] = useState({
+    page: 1,
+    pageSize: 10,
+    type: ''
+  })
 
   useEffect(() => {
     getData();
-  }, [])
+  }, [searchOption])
 
   const getData = async () => {
-    const { data: totalCount } = await axios.get('/coupons/count');
-    const { data } = await axios.get('/coupons?take=20');
+    const {
+      page, pageSize, type
+    } = searchOption
+    const countParams = new URLSearchParams({
+      type
+    })
+    const listParams = new URLSearchParams({
+      skip: ((page - 1) * pageSize).toString(),
+      take: pageSize.toString(),
+      type
+    })
+    const { data: totalCount } = await axios.get('/coupons/count?' + countParams.toString());
+    const { data } = await axios.get('/coupons?' + listParams.toString());
     setTotalCount(totalCount)
     setCoupons(data)
   }
@@ -39,6 +55,7 @@ function App() {
     if (type === 'percent') {
       if (discount > 99) {
         setAlertText('할인은 최대 99%까지 허용합니다.')
+        return
       }
     }
     await axios.post('/coupons/generate', {
@@ -49,6 +66,27 @@ function App() {
     })
     setAlertText(`쿠폰을 생성을 ${count}개 요청했습니다. 양에 따라 시간이 다소 소요될 수 있습니다. - ${moment().format('YYYY-MM-DD HH:mm')}`)
     getData()
+  }
+
+  const {
+    page,
+    pageSize,
+  } = searchOption
+
+  let totalPage = Math.ceil(totalCount / pageSize)
+  let startPage = Math.floor(page / 10) * 10
+  if (page % 10 === 0) {
+    startPage = startPage - 9
+  } else {
+    startPage++
+  }
+  let endPage = startPage + 9
+  if (endPage > totalPage) {
+    endPage = totalPage
+  }
+  const pages = []
+  while (pages.length < endPage - startPage + 1) {
+    pages.push(startPage + pages.length)
   }
 
   return (
@@ -108,7 +146,39 @@ function App() {
 
       <div className="container">
         <div className="row">
-          <div className="col-auto me-auto"><strong>Total: {totalCount}</strong></div>
+          <div className="col-auto me-auto"><strong>Total: {totalCount}</strong>
+            <label className="form-label">Coupon Type</label>
+            <input id="search-type-all" className="form-check-input" type="radio" name="search-type" defaultChecked={true} onClick={(e) => {
+              setSearchOption({
+                ...searchOption,
+                type: '',
+                page: 1
+              })
+            }} />
+            <label className="form-check-label" htmlFor="search-type-all">
+              All
+            </label>
+            <input id="search-type-percent" className="form-check-input" type="radio" name="search-type" defaultChecked={true} onClick={(e) => {
+              setSearchOption({
+                ...searchOption,
+                type: 'percent',
+                page: 1
+              })
+            }} />
+            <label className="form-check-label" htmlFor="search-type-percent">
+              Percent
+            </label>
+            <input id="search-type-amount" className="form-check-input" type="radio" name="search-type" onClick={(e) => {
+              setSearchOption({
+                ...searchOption,
+                type: 'amount',
+                page: 1
+              })
+            }} />
+            <label className="form-check-label" htmlFor="search-type-amount">
+              Amount
+            </label>
+          </div>
           <div className="col-auto"><button className="btn btn-light" onClick={getData}>Refresh</button></div>
         </div>
         <div className="row">
@@ -137,6 +207,37 @@ function App() {
                 }
               </tbody>
             </table>
+            <div>{page} / {totalPage}</div>
+            <nav aria-label="Page navigation">
+              <ul className="pagination">
+                {
+                  page > 1 && <li className="page-item"><a className="page-link" href="#" onClick={() => {
+                    setSearchOption({
+                      ...searchOption,
+                      page: page - 1
+                    })
+                  }}>Previous</a></li>
+                }
+                {
+                  pages.map(p => {
+                    return <li key={p} className="page-item" style={{fontWeight: p === page ? 'bold' : 'normal'}}><a className="page-link" href="#" onClick={() => {
+                      setSearchOption({
+                        ...searchOption,
+                        page: p
+                      })
+                    }}>{p}</a></li>
+                  })
+                }
+                {
+                  totalPage > page && <li className="page-item"><a className="page-link" href="#" onClick={() => {
+                    setSearchOption({
+                      ...searchOption,
+                      page: page + 1
+                    })
+                  }}>Next</a></li>
+                }
+              </ul>
+            </nav>
           </div>
         </div>
       </div>
