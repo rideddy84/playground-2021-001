@@ -6,6 +6,7 @@ import { Coupon } from './coupons/coupon.entity';
 import { CouponsModule } from './coupons/coupons.module';
 import { BullModule } from '@nestjs/bull';
 import { EventsModule } from './events/events.module';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { EventsModule } from './events/events.module';
       entities: [Coupon],
       synchronize: true,
     }),
+    SocketModule,
     CouponsModule,
     BullModule.forRoot({
       redis: {

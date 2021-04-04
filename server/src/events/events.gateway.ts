@@ -8,17 +8,20 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'ws';
+import { SocketService } from '../socket/socket.service';
 
 @WebSocketGateway(3002)
 export class EventsGateway
   implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   private static readonly logger = new Logger(EventsGateway.name);
+  constructor(private socketService: SocketService) {}
 
   @WebSocketServer()
   server: Server;
 
-  afterInit() {
+  afterInit(server: Server) {
     EventsGateway.logger.debug(`WebSocketGateway afterInit`);
+    this.socketService.socket = server;
   }
 
   handleConnection() {

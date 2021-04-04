@@ -12,11 +12,6 @@ interface Coupon {
 }
 
 const socket = new WebSocket('ws://localhost:3002');
-socket.onopen = function () {
-  socket.onmessage = function (data) {
-    console.log(data);
-  };
-};
 
 function App() {
   const [name, setName] = useState('')
@@ -31,6 +26,21 @@ function App() {
     pageSize: 10,
     type: ''
   })
+
+  useEffect(() => {
+    socket.onopen = function () {
+      socket.onmessage = function ({ data }) {
+        const { event, data: eventData } = JSON.parse(data)
+
+        console.log(event, eventData)
+
+        if (event === 'generated') {
+          setAlertText(`쿠폰을 생성했습니다. - ${moment().format('YYYY-MM-DD HH:mm')}`)
+          getData()
+        }
+      };
+    };
+  }, [])
 
   useEffect(() => {
     getData();
@@ -72,7 +82,7 @@ function App() {
       count
     });
     setAlertText(`쿠폰을 생성을 ${count}개 요청했습니다. 양에 따라 시간이 다소 소요될 수 있습니다. - ${moment().format('YYYY-MM-DD HH:mm')}`)
-    getData()
+    
     socket.send(
       JSON.stringify({
         event: 'newJobId',

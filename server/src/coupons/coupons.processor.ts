@@ -2,16 +2,21 @@ import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { CouponsService } from './coupons.service';
+import { SocketService } from '../socket/socket.service';
 
 @Processor('coupon')
 export class CouponProcessor {
   private readonly logger = new Logger(CouponProcessor.name);
-  constructor(private readonly couponsService: CouponsService) {}
+  constructor(
+    private readonly couponsService: CouponsService,
+    private socketService: SocketService,
+  ) {}
 
   @Process('generate')
   async handleGenerate(job: Job) {
     this.logger.debug('쿠폰 생성 요청 수신');
     this.logger.debug(job.data);
+
     const { count: totalCount } = job.data;
 
     const chunks = [];
@@ -36,6 +41,18 @@ export class CouponProcessor {
         errorCount = await this.createCoupons(job, errorCount);
         this.logger.debug(`잔여 실패 건 (${errorCount})`);
       }
+    }
+    try {
+      this.socketService.socket.clients.forEach((key, value) => {
+        value.send(
+          JSON.stringify({
+            event: 'generated',
+            data: job.id,
+          }),
+        );
+      });
+    } catch (err) {
+      this.logger.debug(err);
     }
   }
 
