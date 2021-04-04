@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import moment from 'moment';
+import numeral from 'numeral';
 import './App.css';
 
 interface Coupon {
@@ -58,8 +59,10 @@ function App() {
       take: pageSize.toString(),
       type
     })
-    const { data: totalCount } = await axios.get('/coupons/count?' + countParams.toString());
-    const { data } = await axios.get('/coupons?' + listParams.toString());
+    const [{ data: totalCount }, { data }] = await Promise.all([
+      axios.get('/coupons/count?' + countParams.toString()),
+      axios.get('/coupons?' + listParams.toString())
+    ])
     setTotalCount(totalCount)
     setCoupons(data)
   }
@@ -82,7 +85,7 @@ function App() {
       count
     });
     setAlertText(`쿠폰을 생성을 ${count}개 요청했습니다. 양에 따라 시간이 다소 소요될 수 있습니다. - ${moment().format('YYYY-MM-DD HH:mm')}`)
-    
+
     socket.send(
       JSON.stringify({
         event: 'newJobId',
@@ -126,19 +129,23 @@ function App() {
                 }} />
               </div>
               <div className="mb-3">
-                <label className="form-label">Coupon Type</label>
+                <label className="form-label me-3">Coupon Type</label>
+                <div className="form-check form-check-inline">
                 <input id="type-percent" className="form-check-input" type="radio" name="type" defaultChecked={true} onClick={(e) => {
                   setType('percent')
                 }} />
                 <label className="form-check-label" htmlFor="type-percent">
                   Percent
                 </label>
+                </div>
+                <div className="form-check form-check-inline">
                 <input id="type-amount" className="form-check-input" type="radio" name="type" onClick={(e) => {
                   setType('amount')
                 }} />
                 <label className="form-check-label" htmlFor="type-amount">
                   Amount
                 </label>
+                </div>
               </div>
               <div className="mb-3">
                 <label className="form-label">Disount(price or percent)</label>
@@ -169,38 +176,47 @@ function App() {
 
       <div className="container">
         <div className="row">
-          <div className="col-auto me-auto"><strong>Total: {totalCount}</strong>
-            <label className="form-label">Coupon Type</label>
-            <input id="search-type-all" className="form-check-input" type="radio" name="search-type" defaultChecked={true} onClick={(e) => {
-              setSearchOption({
-                ...searchOption,
-                type: '',
-                page: 1
-              })
-            }} />
-            <label className="form-check-label" htmlFor="search-type-all">
-              All
+          <div className="col-auto me-auto">
+            <strong>Total: {numeral(totalCount).format('0,0')}</strong>
+          </div>
+          <div className="col-auto">
+            <label className="form-label me-3">Coupon Type</label>
+            <div className="form-check form-check-inline">
+              <input id="search-type-all" className="form-check-input" type="radio" name="search-type" defaultChecked={true} onClick={(e) => {
+                setSearchOption({
+                  ...searchOption,
+                  type: '',
+                  page: 1
+                })
+              }} />
+              <label className="form-check-label" htmlFor="search-type-all">
+                All
             </label>
-            <input id="search-type-percent" className="form-check-input" type="radio" name="search-type" defaultChecked={true} onClick={(e) => {
-              setSearchOption({
-                ...searchOption,
-                type: 'percent',
-                page: 1
-              })
-            }} />
-            <label className="form-check-label" htmlFor="search-type-percent">
-              Percent
+            </div>
+            <div className="form-check form-check-inline">
+              <input id="search-type-percent" className="form-check-input" type="radio" name="search-type" defaultChecked={true} onClick={(e) => {
+                setSearchOption({
+                  ...searchOption,
+                  type: 'percent',
+                  page: 1
+                })
+              }} />
+              <label className="form-check-label" htmlFor="search-type-percent">
+                Percent
             </label>
-            <input id="search-type-amount" className="form-check-input" type="radio" name="search-type" onClick={(e) => {
-              setSearchOption({
-                ...searchOption,
-                type: 'amount',
-                page: 1
-              })
-            }} />
-            <label className="form-check-label" htmlFor="search-type-amount">
-              Amount
+            </div>
+            <div className="form-check form-check-inline">
+              <input id="search-type-amount" className="form-check-input" type="radio" name="search-type" onClick={(e) => {
+                setSearchOption({
+                  ...searchOption,
+                  type: 'amount',
+                  page: 1
+                })
+              }} />
+              <label className="form-check-label" htmlFor="search-type-amount">
+                Amount
             </label>
+            </div>
           </div>
           <div className="col-auto"><button className="btn btn-light" onClick={getData}>Refresh</button></div>
         </div>
@@ -211,7 +227,7 @@ function App() {
                 <tr>
                   <th>Name</th>
                   <th>Type</th>
-                  <th>Disount(price or percent)</th>
+                  <th>Disount(price or %)</th>
                   <th>Code</th>
                   <th>Created At</th>
                 </tr>
@@ -222,9 +238,9 @@ function App() {
                     return <tr key={coupon.code}>
                       <td>{coupon.name}</td>
                       <td>{coupon.type}</td>
-                      <td>{coupon.discount}</td>
+                      <td className="text-end">{numeral(coupon.discount).format('0,0')}</td>
                       <td>{coupon.code}</td>
-                      <td>{moment(coupon.createdAt).format()}</td>
+                      <td>{moment(coupon.createdAt).format('YYYY-MM-DD HH:mm:ss')}</td>
                     </tr>
                   })
                 }
