@@ -11,6 +11,13 @@ interface Coupon {
   type: string
 }
 
+const socket = new WebSocket('ws://localhost:3002');
+socket.onopen = function () {
+  socket.onmessage = function (data) {
+    console.log(data);
+  };
+};
+
 function App() {
   const [name, setName] = useState('')
   const [type, setType] = useState('percent')
@@ -58,14 +65,20 @@ function App() {
         return
       }
     }
-    await axios.post('/coupons/generate', {
+    const { data } = await axios.post('/coupons/generate', {
       name,
       type,
       discount,
       count
-    })
+    });
     setAlertText(`쿠폰을 생성을 ${count}개 요청했습니다. 양에 따라 시간이 다소 소요될 수 있습니다. - ${moment().format('YYYY-MM-DD HH:mm')}`)
     getData()
+    socket.send(
+      JSON.stringify({
+        event: 'newJobId',
+        data: data.id,
+      }),
+    );
   }
 
   const {
@@ -220,7 +233,7 @@ function App() {
                 }
                 {
                   pages.map(p => {
-                    return <li key={p} className="page-item" style={{fontWeight: p === page ? 'bold' : 'normal'}}><a className="page-link" href="#" onClick={() => {
+                    return <li key={p} className="page-item" style={{ fontWeight: p === page ? 'bold' : 'normal' }}><a className="page-link" href="#" onClick={() => {
                       setSearchOption({
                         ...searchOption,
                         page: p

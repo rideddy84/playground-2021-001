@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { Coupon } from './coupons/coupon.entity';
 import { CouponsModule } from './coupons/coupons.module';
 import { BullModule } from '@nestjs/bull';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BullModule } from '@nestjs/bull';
         port: 6379,
       },
     }),
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
